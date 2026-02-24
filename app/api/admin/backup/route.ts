@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { assertAdminApi } from "@/lib/auth/admin-api";
+import { requireAdminApiSession } from "@/lib/auth/guards";
+import { apiOk } from "@/lib/security/http";
 
 export async function GET() {
-  if (!(await assertAdminApi())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const unauthorized = await requireAdminApiSession();
+  if (unauthorized) return unauthorized;
 
   const [projects, posts, skills, hero] = await Promise.all([
     prisma.project.findMany(),
@@ -12,5 +13,5 @@ export async function GET() {
     prisma.heroContent.findMany()
   ]);
 
-  return NextResponse.json({ exportedAt: new Date().toISOString(), projects, posts, skills, hero });
+  return apiOk({ exportedAt: new Date().toISOString(), projects, posts, skills, hero });
 }

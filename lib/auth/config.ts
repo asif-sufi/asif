@@ -3,8 +3,16 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db/prisma";
 import { compareSync } from "bcryptjs";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
+  cookies: {
+    sessionToken: {
+      name: isProd ? "__Secure-authjs.session-token" : "authjs.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: isProd }
+    }
+  },
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
