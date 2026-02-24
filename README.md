@@ -9,7 +9,6 @@ Production-grade personal cybersecurity platform built with Next.js 14 + Prisma 
 - `lib/` Business logic, auth, security, analytics
 - `prisma/` Database schema
 - `types/` Shared typings
-- `hooks/` Custom hooks (reserved)
 - `middleware.ts` Security middleware
 
 ## Setup
@@ -23,48 +22,30 @@ Production-grade personal cybersecurity platform built with Next.js 14 + Prisma 
 
 ## Security Controls
 
-- Strict security headers and CSP in `next.config.ts`
-- Credentials-only admin auth with role checks
-- `requireAdmin`, `validateInput`, and `withRateLimit` reusable guards
-- Input validation with Zod for public routes
-- Contact + analytics routes rate limited
-- No third-party trackers or CDN scripts
-- Privacy-safe analytics aggregation model
+- Strict security headers and CSP in middleware + Next config
+- Credentials-only admin auth with role checks and centralized `requireAdminSession` / `requireAdminApiSession`
+- Origin validation via `TRUSTED_ORIGIN`
+- Unified API error format `{ ok:false, error:{ code, message, details? } }`
+- Route-level Zod validation, in-memory rate limiting, and upload MIME/size validation
+- Private uploads in `.uploads` with authenticated download endpoint
+- Privacy-safe analytics model (aggregated counts only)
 
-## Deployment
+## Deployment Guide
 
 ### Vercel
 
 1. Provision PostgreSQL (Neon, Supabase, RDS, etc.)
 2. Set all `.env.example` values in project settings
-3. Configure build command: `npm run build`
-4. Run `npm run prisma:migrate` during deployment pipeline
+3. Build command: `npm run build`
+4. Add migration step in CI/CD: `npm run prisma:migrate`
+5. Ensure `TRUSTED_ORIGIN` equals production URL
 
 ### VPS (Ubuntu + PM2 + Nginx)
 
-1. Install Node.js 20+, PostgreSQL, and Nginx
-2. Clone repo and set `.env`
-3. `npm ci && npm run prisma:generate && npm run build`
-4. `npm run prisma:migrate`
-5. Start with PM2: `pm2 start npm --name asif-platform -- start`
-6. Nginx reverse proxy to `localhost:3000`
-7. Enable TLS with Let's Encrypt and enforce HTTPS
-
-## Database Setup Instructions
-
-- Create database: `CREATE DATABASE asif_platform;`
-- Create least-privileged DB user for app runtime
-- Run migrations from CI/CD only
-- Enable PITR and daily backups
-
-## Production Readiness Checklist
-
-- [ ] All secrets rotated and stored in secret manager
-- [ ] Admin password hash generated with strong passphrase
-- [ ] Prisma migrations applied in production
-- [ ] CSP audited for final script/style policies
-- [ ] Rate limits tuned from load testing
-- [ ] Error monitoring configured without PII
-- [ ] Backup restore test completed
-- [ ] Lighthouse performance/security audit >95
-- [ ] RTC disabled by default unless explicit need
+1. Install Node.js 20+, PostgreSQL, Nginx
+2. Clone repo, create `.env`, run `npm ci`
+3. `npm run prisma:generate && npm run build && npm run prisma:migrate`
+4. Start with PM2: `pm2 start npm --name asif-platform -- start`
+5. Nginx reverse proxy to `localhost:3000`
+6. Enable TLS (Let’s Encrypt) and force HTTPS
+7. Keep `.uploads` on persistent storage with strict file permissions

@@ -6,13 +6,22 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
 body {
-  @apply bg-surface text-slate-100 antialiased;
+  @apply bg-surface text-slate-100 antialiased transition-colors duration-300;
   background-image: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.12), transparent 40%), radial-gradient(circle at 80% 0%, rgba(139, 92, 246, 0.14), transparent 35%);
 }
 
+:root[data-theme="light"] body {
+  @apply bg-slate-100 text-slate-900;
+  background-image: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.15), transparent 45%), radial-gradient(circle at 80% 0%, rgba(139, 92, 246, 0.13), transparent 35%);
+}
+
 .glass {
-  @apply bg-white/5 border border-white/10 backdrop-blur-xl;
+  @apply border border-white/10 bg-white/5 backdrop-blur-xl;
 }
 
 .container-shell {
